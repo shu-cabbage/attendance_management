@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="utf-8">
+        <title>管理</title>
+        <meta name="viewport" content="width=device-width">
+        <script src="socket.io/socket.io.js"></script>
+        <style>
+            html {
+                touch-action: manipulation;
+            }
+            table{
+                border: 1px solid #000;
+                border-collapse: collapse;
+            }
+            th{
+                width: 150px;
+                border: 1px solid #000;
+            }
+            td{
+                width: 150px;
+                border: 1px solid #000;
+                background: #eee;
+            }
+            table tr:nth-child(odd) td{
+                background: #fff;
+            }
+        </style>
+    </head>
+    <body>
+        <header style="text-align: center;">
+            <h1>総入場者数</h1>
+            <hr>
+        </header>
+        <div style="width: 300px; margin: 0px auto;">
+            <div style="display: flex; border-bottom: 1px solid #000000; width: 300px;">
+                <p style="font-size: 25px;">総入場者数</p>
+                <div style="padding: 10px;"></div>
+                <p id="all_enter" style="font-size: 25px; width: 150px; text-align: center;">0</p>
+            </div>
+            <p style="font-size: 13px;">5分おきに更新されます。</p>
+            <div style="width: 300px; margin: 50px 0px 0px 0px;">
+                <p>一時間ごとの入場人数</p>
+                <table style="text-align: center;"> <!--過去のデータ-->
+                    <thead>
+                        <th>時間帯</th>
+                        <th>入場者数</th>
+                    </thead>
+                    <tbody id="number_per_hour">
+                        <tr>
+                            <td id="time_0">9:00-10:00</td>
+                            <td id="number_of_people_0"></td>
+                        </tr>
+                        <tr>
+                            <td id="time_1">10:00-11:00</td>
+                            <td id="number_of_people_1"></td>
+                        </tr>
+                        <tr>
+                            <td id="time_2">11:00-12:00</td>
+                            <td id="number_of_people_2"></td>
+                        </tr>
+                        <tr>
+                            <td id="time_3">12:00-13:00</td>
+                            <td id="number_of_people_3"></td>
+                        </tr>
+                        <tr>
+                            <td id="time_4">13:00-14:00</td>
+                            <td id="number_of_people_4"></td>
+                        </tr>
+                        <tr>
+                            <td id="time_5">14:00-15:00</td>
+                            <td id="number_of_people_5"></td>
+                        </tr>
+                        <tr>
+                            <td id="time_6">15:00-16:00</td>
+                            <td id="number_of_people_6"></td>
+                        </tr>
+                        <tr>
+                            <td id="time_7">16:00-17:00</td>
+                            <td id="number_of_people_7"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div style="width: 300px; margin: 30px 0px 0px 0px;">
+                <p>過去履歴</p>
+                <table style="text-align: center;"> <!--過去のデータ-->
+                    <thead>
+                        <th>日付</th>
+                        <th>入場者数</th>
+                    </thead>
+                    <tbody id="history"></tbody>
+                </table>
+            </div>
+        </div>
+    </body>
+    <script>
+        const all_enter = document.getElementById("all_enter");
+        const socket = io();
+        // const socket = io("/", {path: "/" + location.pathname.split("/")[1] + "/socket.io/"});
+
+        window.addEventListener("DOMContentLoaded", function(){
+            socket.emit("get_history", "");
+            auto_get_count();
+        });
+
+        let auto_time = 1000 * 60 * 5;//5分
+        // let auto_time = 1000 * 5;//5分
+        function auto_get_count(){
+            let interval = setInterval(() => {
+                socket.emit("get_all_count");
+            }, auto_time);
+        }
+
+        socket.on("all_num", function(value){
+            all_enter.textContent = value;
+            // console.log(value);
+        });
+
+        socket.on("history_data", function(data){
+            // console.log(data);
+            let table = document.getElementById("history");
+            table.textContent = "";
+            for(let i = 0; i < data.length; i++){
+                let tr = document.createElement("tr");
+
+                let td0 = document.createElement("td");
+                td0.textContent = data[i].date;
+                let td1 = document.createElement("td");
+                td1.textContent = data[i].count;
+
+                tr.appendChild(td0);
+                tr.appendChild(td1);
+                table.appendChild(tr);
+            }
+        });
+
+        socket.on("send_start_hour", function(time){
+            let hour = time.hour;
+            let min = time.min;
+            for(let i = 0; i < 8; i++){
+                let begin_time = hour + ":" + min;
+                hour++;
+                let stop_time = hour + ":" + min;
+
+                let time_zone = document.getElementById("time_" + i);
+                time_zone.textContent = begin_time + "-" + stop_time;
+            }
+            if(time.per_hour_data === undefined){
+                for(let i = 0; i < 8; i++){
+                    let number_of_visitors = document.getElementById("number_of_people_" + i);
+                    number_of_visitors.textContent = "";
+                }
+            }else{
+                for(let i = 0; i < time.per_hour_data.length; i++){
+                    let number_of_visitors = document.getElementById("number_of_people_" + i);
+                    number_of_visitors.textContent = time.per_hour_data[i];
+                }
+            }
+        });
+
+        socket.on("number_of_people_per_hour", function(data){
+            let number_of_visitors = document.getElementById("number_of_people_" + data.index);
+            number_of_visitors.textContent = data.number_of_people;
+        });
+    </script>
+</html>

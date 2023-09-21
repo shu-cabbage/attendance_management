@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+        <title>入退場数カウンタ</title>
+        <script src="socket.io/socket.io.js"></script>
+        <style>
+            html {
+                touch-action: manipulation;
+            }
+            footer{
+                position: absolute;/*←絶対位置*/
+                bottom: 0; /*下に固定*/
+            }
+        </style>
+    </head>
+    <body>
+        <div style="width: 300px; margin: 0px auto 0px auto;">
+            <div style="display: flex; width: 300px; margin: 0px auto;">
+                <p style="font-size: 40px;">入場人数</p>
+                <div style="padding: 10px;"></div>
+                <p id="admission_num" style="border: 1px solid black; font-size: 40px; width: 110px; text-align: center;">0</p>
+            </div>
+            <div style="width: 300px; margin: 70px auto 0px auto;">
+                <button style="width: 300px; height: 240px; padding: 20px 0px; margin: 0px auto; font-size: 30px;" onclick="btn_admission();">入場 +1</button>
+                <!-- <button style="width: 80px; height: 60px; margin: 120px 0px 0px 220px;" onclick="btn_send();">送信</button> -->
+            </div>
+            <div style="width: 300px; margin: 0px auto 0px auto;">
+                <p style="font-size: 13px;">id: <a id="device_id"></a></p>
+            </div>
+        </div>
+    </body>
+    <script>
+        const admission_num = document.getElementById("admission_num");
+        const socket = io("/", {path: location.pathname + "socket.io/"});
+        let count = 0;
+        let send_btn_status = 0;
+
+        window.addEventListener("DOMContentLoaded", function(){
+            if(document.cookie == "") {
+                socket.emit("no_cookie", "");
+                return;
+            }
+            socket.emit("get_own_value", {id : document.cookie.split("=")[1]});
+        });
+
+        socket.on("id_cookie", function(id_cookie){
+            document.cookie = "id=" + id_cookie + ";max-age=" + 60*60*24;
+            document.getElementById("device_id").textContent = id_cookie;
+        });
+
+        socket.on("own_num", function(num){
+            document.getElementById("device_id").textContent = document.cookie.split("=")[1];
+            admission_num.textContent = num;
+            count = num;
+            // console.log(num);
+        });
+
+        function btn_admission(){
+            count++;
+            admission_num.textContent = count;
+            socket.emit("admission", {id : document.cookie.split("=")[1], count: count});
+        }
+    </script>
+</html>
