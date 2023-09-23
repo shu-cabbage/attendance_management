@@ -7,6 +7,7 @@ const server = http.Server(app);
 const io = socketio(server);
 const fs = require('fs');
 const PORT = process.env.PORT || 3000;
+require("dotenv").config();
 let status = false;
 
 app.get("/", (req, res) => {
@@ -25,9 +26,9 @@ server.listen(PORT, () => {
 /* データベース接続 */
 const connection = mysql.createConnection({
     host: '127.0.0.1',
-    user: 'root',
-    password: '13400116',
-    database: 'testWaitTime',
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE
 });
 connection.connect((err) => {
     if(err){
