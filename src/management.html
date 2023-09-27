@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <title>管理</title>
         <meta name="viewport" content="width=device-width">
-        <script src="socket.io/socket.io.js"></script>
+        <script src="/counter/socket.io/socket.io.js"></script>
         <style>
             html {
                 touch-action: manipulation;
@@ -96,8 +96,8 @@
     </body>
     <script>
         const all_enter = document.getElementById("all_enter");
-        const socket = io();
-        // const socket = io("/", {path: "/" + location.pathname.split("/")[1] + "/socket.io/"});
+        // const socket = io();
+        const socket = io("/", {path: "/" + location.pathname.split("/")[1] + "/socket.io/"});
 
         window.addEventListener("DOMContentLoaded", function(){
             socket.emit("get_history", "");

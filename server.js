@@ -6,7 +6,7 @@ const app = express();
 const server = http.Server(app);
 const io = socketio(server);
 const fs = require('fs');
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 require("dotenv").config();
 let status = false;
 
@@ -18,6 +18,7 @@ app.get("/mgmt", (req, res) => {
 });
 
 app.use(express.static(__dirname + "/src"));
+app.use(express.static(__dirname));
 
 server.listen(PORT, () => {
     console.log("server on port %d", PORT);
@@ -39,7 +40,7 @@ connection.connect((err) => {
 });
 
 io.on("connection", (socket) => {
-    console.log("connection: ", socket.id);
+    // console.log("connection: ", socket.id);
     socket.on("no_cookie", function(){ //counterの個別id生成，登録
         let date = new Date();
         let today = date.getMonth() + 1 + "/" + date.getDate();
