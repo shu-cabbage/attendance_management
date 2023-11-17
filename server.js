@@ -54,17 +54,11 @@ io.on("connection", (socket) => {
         });
     });
     socket.on("get_own_value", function(data){ //再読み込みで自分のカウントを送信
-        connection.query('SELECT * FROM users', (err, result) => {
-            // console.log(result);
-            for(let i = 0; i < result.length; i++){
-                if(result[i].id == data.id){
-                    socket.emit("own_num", result[i].count);
-                    return;
-                }
-            }
+        connection.query('SELECT * FROM users WHERE id = ?', [data.id], (err, result) => {
+            socket.emit("own_num", result[0].count);
         });
     });
-    socket.on("admission", function(data){ //counter加算
+    socket.on("admission", async function(data){ //counter加算
         if(!status){
             let  masterData = JSON.parse(fs.readFileSync("./admission_control.json", "utf8"));
             status = true;
@@ -77,7 +71,7 @@ io.on("connection", (socket) => {
             masterData.per_hour.splice(0, 8);
             io.emit("send_start_hour", {hour: hour, min: minutes});
             fs.writeFileSync("admission_control.json", JSON.stringify(masterData, null, "    "));
-            number_of_peple_per_hour();
+            await number_of_peple_per_hour();
         }
         connection.query('UPDATE users SET count = ? Where id = ?',
             [data.count, data.id],
@@ -137,7 +131,7 @@ io.on("connection", (socket) => {
 
 let per_time = 1000*60*60; //1h
 // let per_time = 1000 * 5;
-function number_of_peple_per_hour(){
+async function number_of_peple_per_hour(){
     let per_hour_count = 0;
     let interval = setInterval(() => {
         let date = new Date();
