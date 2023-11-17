@@ -16,7 +16,7 @@ databaseとtableを作る。
 ```sql
 mysql> CREATE DATABASE counter;
 mysql> USE counter;
-mysql> CREATE TABLE users (id INT AUTO_INCREMENT, date TEXT, tagId TEXT, count INT UNSIGNED, PRIMARY KEY (id));
+mysql> CREATE TABLE users (id INT AUTO_INCREMENT, date TEXT, count INT UNSIGNED, PRIMARY KEY (id));
 ```  
 nginx.confにlocationを書く。  
 ```nginx
