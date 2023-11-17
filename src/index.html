@@ -17,14 +17,17 @@
     </head>
     <body>
         <div style="width: 300px; margin: 0px auto 0px auto;">
-            <div style="display: flex; width: 300px; margin: 0px auto;">
-                <p style="font-size: 40px;">入場人数</p>
-                <div style="padding: 10px;"></div>
-                <p id="admission_num" style="border: 1px solid black; font-size: 40px; width: 110px; text-align: center;">0</p>
+            <div style="display: flex; width: 300px; margin: 20px auto 0px auto; justify-content: center; align-items: center;">
+                <p style="font-size: 25px; height: 40px; margin: 0px;">総入場人数</p>
+                <div style="height: 40px; width: 30px;"></div>
+                <p id="all_admission_num" style="border: 1px solid black; font-size: 25px; width: 90px; height: 40px; text-align: center; margin: 0px;">0</p>
             </div>
-            <div style="width: 300px; margin: 70px auto 0px auto;">
-                <button style="width: 300px; height: 240px; padding: 20px 0px; margin: 0px auto; font-size: 30px;" onclick="btn_admission();">入場 +1</button>
-                <!-- <button style="width: 80px; height: 60px; margin: 120px 0px 0px 220px;" onclick="btn_send();">送信</button> -->
+            <div style="width: 300px; margin: 0px auto 0px auto;">
+                <p style="font-size: 10px; margin-left: 30px;">5分おきに更新されます。</p>
+            </div>
+            <div style="width: 300px; margin: 40px auto 0px auto;">
+                <button style="width: 300px; height: 240px; padding: 20px 0px; margin: 0px auto; font-size: 30px;" onclick="btn_admission();">入場+1<p id="admission_num"></p></button>
+                <button style="width: 300px; height: 100px; margin: 40px auto 0px auto; font-size: 20px;" onclick="btn_subtraction();">入場 -1</button>
             </div>
             <div style="width: 300px; margin: 0px auto 0px auto;">
                 <p style="font-size: 13px;">id: <a id="device_id"></a></p>
@@ -33,6 +36,7 @@
     </body>
     <script>
         const admission_num = document.getElementById("admission_num");
+        const all_admission_num = document.getElementById("all_admission_num");
         const socket = io("/", {path: location.pathname + "socket.io/"});
         let count = 0;
         let send_btn_status = 0;
@@ -40,13 +44,14 @@
         window.addEventListener("DOMContentLoaded", function(){
             if(document.cookie == "") {
                 socket.emit("no_cookie", "");
-                return;
+            }else{
+                socket.emit("get_own_value", {id : document.cookie.split("=")[1]});
             }
-            socket.emit("get_own_value", {id : document.cookie.split("=")[1]});
+            auto_get_count();
         });
 
         socket.on("id_cookie", function(id_cookie){
-            document.cookie = "id=" + id_cookie + ";max-age=" + 60*60*24;
+            document.cookie = "id=" + id_cookie + ";max-age=" + 60*60*23;
             document.getElementById("device_id").textContent = id_cookie;
         });
 
@@ -54,7 +59,6 @@
             document.getElementById("device_id").textContent = document.cookie.split("=")[1];
             admission_num.textContent = num;
             count = num;
-            // console.log(num);
         });
 
         function btn_admission(){
@@ -62,5 +66,23 @@
             admission_num.textContent = count;
             socket.emit("admission", {id : document.cookie.split("=")[1], count: count});
         }
+
+        function btn_subtraction(){
+            count--;
+            admission_num.textContent = count;
+            socket.emit("admission", {id : document.cookie.split("=")[1], count: count});
+        }
+
+        let auto_time = 1000 * 60 * 5;//5分
+        function auto_get_count(){//5分ごとに総入場者数を更新
+            socket.emit("get_all_count");
+            let interval = setInterval(() => {
+                socket.emit("get_all_count");
+            }, auto_time);
+        }
+
+        socket.on("all_num", function(value){//総入場者数表示
+            all_admission_num.textContent = value;
+        });
     </script>
 </html>

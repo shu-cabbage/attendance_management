@@ -96,37 +96,33 @@
     </body>
     <script>
         const all_enter = document.getElementById("all_enter");
-        // const socket = io();
         const socket = io("/", {path: "/" + location.pathname.split("/")[1] + "/socket.io/"});
 
         window.addEventListener("DOMContentLoaded", function(){
-            socket.emit("get_history", "");
+            socket.emit("get_history");
             auto_get_count();
         });
 
         let auto_time = 1000 * 60 * 5;//5分
-        // let auto_time = 1000 * 5;//5分
-        function auto_get_count(){
+        function auto_get_count(){//5分ごとに総入場者数を更新
             let interval = setInterval(() => {
                 socket.emit("get_all_count");
             }, auto_time);
         }
 
-        socket.on("all_num", function(value){
+        socket.on("all_num", function(value){//総入場者数表示
             all_enter.textContent = value;
-            // console.log(value);
         });
 
-        socket.on("history_data", function(data){
-            // console.log(data);
+        socket.on("history_data", function(data){//過去の入場者数表示
             let table = document.getElementById("history");
-            table.textContent = "";
+            table.textContent = "";//tableを初期化
             for(let i = 0; i < data.length; i++){
                 let tr = document.createElement("tr");
 
-                let td0 = document.createElement("td");
+                let td0 = document.createElement("td");//日付
                 td0.textContent = data[i].date;
-                let td1 = document.createElement("td");
+                let td1 = document.createElement("td");//人数
                 td1.textContent = data[i].count;
 
                 tr.appendChild(td0);
@@ -135,7 +131,7 @@
             }
         });
 
-        socket.on("send_start_hour", function(time){
+        socket.on("send_start_hour", function(time){//一時間ごと表示の時間の計算
             let hour = time.hour;
             let min = time.min;
             for(let i = 0; i < 8; i++){
@@ -159,7 +155,7 @@
             }
         });
 
-        socket.on("number_of_people_per_hour", function(data){
+        socket.on("number_of_people_per_hour", function(data){//一時間ごと更新
             let number_of_visitors = document.getElementById("number_of_people_" + data.index);
             number_of_visitors.textContent = data.number_of_people;
         });
