@@ -1,0 +1,19 @@
+html {
+    touch-action: manipulation;
+}
+table{
+    border: 1px solid #000;
+    border-collapse: collapse;
+}
+th{
+    width: 150px;
+    border: 1px solid #000;
+}
+td{
+    width: 150px;
+    border: 1px solid #000;
+    background: #eee;
+}
+table tr:nth-child(odd) td{
+    background: #fff;
+}

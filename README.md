@@ -4,8 +4,19 @@
 高専祭運営が使うWebApp。
 
 ## Install
-nginx、node.jsをインストールする。  
-`$ sudo apt install -y nginx nodejs npm`
+PostgreSQL、nginx、node.jsをインストールする。  
+`$ sudo apt install -y nginx nodejs npm postgresql`
+
+### PostgreSQL
+DBの初期化をする。  
+`initdb -E UTF8 --locale=C`  
+
+次に、`$ sudo - postgres`でrootでログインする。  
+`$ psql`でDBにログインする。  
+PostgreSQLのロールを作成する。  
+```postgresql
+postgres=# CREATE USER user_counter WITH PASSWORD 'password';
+```
 
 ### node.js
 node jsのインストールはちょっとクセがある。  
@@ -21,6 +32,18 @@ $ sudo apt purge -y nodejs npm
 サーバサイドは、M2pro macmini、i7 MBP、ubuntu serverで確認済み。  
 クライアントサイドは、iPhone XR、iPhone 7、Xiaomi Mi 11 Lite 5Gで確認済み。  
 ### サーバ側
+- データベース作成
+```postgresql
+postgres=# CREATE DATABASE a_counter;
+postgres=# ALTER DATABASE a_counter OWNER TO user_counter;
+postgres=# \c a_counter
+```
+- テーブル作成
+```sql
+a_counter=> CREATE TABLE store_data (c_id TEXT, n_count INT NOT NULL, d_date DATE NOT NULL DEFAULT CURRENT_TIMESTAMP, d_time TIME (0) NOT NULL DEFAULT CURRENT_TIMESTAMP);
+```  
+
+
 nginx.confにlocationを追記する。  
 ```nginx
 location /counter/ {
